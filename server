@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+
+project_name="app_server"
+pid_path="/var/run/app_server/app_server_master.pid"
+
+Usage()
+{
+    echo "eg:   ./server start -r";
+    echo "      start | stop | restart | reload";
+    echo "      -r release mode";
+}
+
+mode=0
+
+while getopts "p:r" arg
+do
+        case $arg in
+             r)
+                mode=1
+                ;;
+             ?)
+                Usage
+                exit 1
+                ;;
+        esac
+done
+
+if [ $mode = 0 ] ; then
+    model="default"
+else
+    model="release"
+fi
+
+case "$1" in
+     start)
+        echo "start server..."
+        php app/webroot/main.php $model
+        ;;
+     stop)
+        echo "stop server..."
+        kill -15 `cat $pid_path`
+        ;;
+     restart)
+        echo "stop server..."
+        kill -15 `cat $pid_path`
+        echo "wait until the server shutdown..."
+        sleep 3
+        echo "start server..."
+        php app/webroot/main.php $model
+        ;;
+     reload)
+        echo "reload server..."
+        kill -USR1 `cat $pid_path`
+        ;;
+esac
